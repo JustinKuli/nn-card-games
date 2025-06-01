@@ -48,7 +48,7 @@ func TestCountInMulti(t *testing.T) {
 		t.Fail()
 	}
 
-	for _, c := range d {
+	for c := range d.DealWithPen(0) {
 		cardCount[c] += 1
 		stringCount[c.String()] += 1
 		nameCount[c.Name()] += 1
@@ -99,6 +99,56 @@ func TestShuffleR(t *testing.T) {
 
 	if d[0].Name() != "Ace of Spades" { // See? Lucky.
 		t.Logf("Inconsistent shuffle: got %v, expected As", d[0].String())
+		t.Fail()
+	}
+}
+
+func TestDealWithPen(t *testing.T) {
+	d := deck.Standard()
+
+	dealt := make([]card.Card, 0)
+
+	for c, ok := range d.DealWithPen(7) {
+		dealt = append(dealt, c)
+
+		if !ok {
+			break
+		}
+	}
+
+	if fmt.Sprint(dealt) != "[Ac Ad Ah As 2c 2d 2h]" {
+		t.Logf("Dealt %v, expected '[Ac Ad Ah As 2c 2d 2h]'", fmt.Sprint(dealt))
+		t.Fail()
+	}
+
+	forceDealtAll := make([]card.Card, 0)
+
+	for c := range d.DealWithPen(4) {
+		forceDealtAll = append(forceDealtAll, c)
+	}
+
+	if len(forceDealtAll) != 52 {
+		t.Logf("Force dealt %v, expected 52", len(forceDealtAll))
+		t.Fail()
+	}
+
+	stretchDealt := make([]card.Card, 0)
+	beyond := 0
+
+	for c, ok := range d.DealWithPen(3) {
+		stretchDealt = append(stretchDealt, c)
+
+		if !ok {
+			beyond++
+		}
+
+		if beyond > 2 {
+			break
+		}
+	}
+
+	if fmt.Sprint(stretchDealt) != "[Ac Ad Ah As 2c]" {
+		t.Logf("Stretch dealt %v, expected '[Ac Ad Ah As 2c]'", fmt.Sprint(stretchDealt))
 		t.Fail()
 	}
 }
